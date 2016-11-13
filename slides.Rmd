@@ -1,0 +1,63 @@
+---
+title: "Graphical representation of oil consumption"
+author: "Green orange"
+date: "13 November 2016"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+library(plotly)
+library(tidyr)
+library(xlsx)
+
+```
+
+
+## Short description
+#### The following slide shows oil consumption per capita in tonnes per year for the following countries:
+
+
+- China
+- United States
+- Germany
+- Norway
+- Venezuela
+
+*The dataset contains the data from 1965 to 2010 and was compiled by BP (see [http://www.bp.com/statisticalreview](http://www.bp.com/statisticalreview) for details)*
+
+## Plotly code chunk
+
+The final command to make the plot using the R plotly package looks like this:
+```{r plotly_code, eval=FALSE, echo = TRUE}
+plot_ly(data = oil_country, x = ~year, y = ~oil.consumption,
+        type = "scatter", mode = "lines+markers", color = ~country)
+        %>% layout(xaxis = list(title = "Year"), 
+                   yaxis = list(title = 
+                "Oil Consumption per capita (tonnes per year)"))
+```
+
+## Oil consumption per capita by country
+
+```{r, echo=FALSE}
+setwd("C:/Users/Mikhail/Documents/Coursera/Data products")
+oil <- read.xlsx(file = "Oil Consumption per capita.xlsx", sheetIndex = 1)
+# leaving rows without NAs
+oil_compl <- oil[complete.cases(oil),]
+# renaming columns
+names(oil_compl)[1] <- "country"
+names(oil_compl)[2:47] <- 1965:2010
+# "gathering", i.e. transforming the dataset so that year numbers are values in the year column
+oil2 <- gather(oil_compl, key = year, value = oil.consumption, -country) 
+oil2$year <- as.numeric(oil2$year)
+#calculating averages
+
+oil_country <- subset(oil2, (country == "China") | (country == "United States") | (country == "Germany") | (country == "Norway") | (country == "Venezuela"))
+oil_country$country <- droplevels(oil_country$country)
+plot_ly(data = oil_country, x = ~year, y = ~oil.consumption,  type = "scatter", mode = "lines+markers", color = ~country) %>% layout(xaxis = list(title = "Year"), yaxis = list(title = "Oil Consumption per capita (tonnes per year)"))
+```
+
+## That's it!
